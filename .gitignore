@@ -1,0 +1,6 @@
+**/build
+**/node_nodules
+**.tgz
+**.log
+**.lock
+**/.npm
