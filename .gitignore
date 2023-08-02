@@ -1,6 +1,5 @@
-**/build
-**/node_nodules
+**build
+**node_modules
 **.tgz
 **.log
-**.lock
-**/.npm
+**package-lock.json
