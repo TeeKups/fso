@@ -17,21 +17,9 @@ const StatisticLine = ({label, fn}) => (
 );
 
 const Statistics = ({statistics}) => {
-    const getTotal = () => {
-        let sum = 0;
-        for (const key in statistics) {
-            sum += statistics[key].value;
-        };
-        return sum;
-    }
+    const getTotal = () => Object.values(statistics).reduce((acc, v) => acc + v.value, 0);
 
-    const getMean = () => {
-        let sum = 0;
-        for (const key in statistics) {
-            sum += statistics[key].weight*statistics[key].value;
-        };
-        return sum / getTotal();
-    };
+    const getMean = () => Object.values(statistics).reduce((acc, v) => acc + v.value*v.weight, 0);
 
     const getPositivePercentage = () => (100 * statistics.good.value / getTotal()) + "%";
 
@@ -44,15 +32,17 @@ const Statistics = ({statistics}) => {
         {key: 5, label: 'Positive', fn: () => getPositivePercentage()},
     ];
 
-    return (getTotal() === 0)
-        ? <div>No statistics given.</div>
-        : (
-            <table>
-                <tbody>
-                    {lines.map(line => <StatisticLine key={line.key} label={line.label} fn={line.fn}/>)}
-                </tbody>
-            </table>
-        );
+    if (getTotal() === 0) {
+        return( <div>No statistics given.</div> );
+    }
+
+    return(
+        <table>
+            <tbody>
+                {lines.map(line => <StatisticLine key={line.key} label={line.label} fn={line.fn}/>)}
+            </tbody>
+        </table>
+    );
 };
 
 const App = () => {
