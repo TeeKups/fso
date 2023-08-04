@@ -1,4 +1,5 @@
-import { useState, Fragment } from 'react';
+import { useState, useEffect, Fragment } from 'react';
+import axios from 'axios'
 
 const Filter = ({filter, setFilter}) => (
     <form onSubmit={event => event.preventDefault()}>
@@ -27,16 +28,23 @@ const Persons = ({persons, filter}) => (
     </ul>
 );
 
+const dbURL = 'http://localhost:3001';
+
 export const App = () => {
-    const [persons, setPersons] = useState([
-        { name: 'Arto Hellas', number: '040-123456' },
-        { name: 'Ada Lovelace', number: '39-44-5323523' },
-        { name: 'Dan Abramov', number: '12-43-234345' },
-        { name: 'Mary Poppendieck', number: '39-23-6423122' }
-    ]);
+    const [persons, setPersons] = useState([]);
     const [newName, setNewName] = useState('');
     const [newNumber, setNewNumber] = useState('');
     const [filter, setFilter] = useState('');
+
+    useEffect(() => {
+        const resource = '/persons';
+        console.log(`Requesting ${resource}`);
+        axios.get(dbURL+resource)
+            .then(res => {
+                console.log(`Got ${resource} from server`);
+                setPersons(res.data)
+            });
+    }, []);
 
     const addPerson = (event) => {
         event.preventDefault();
