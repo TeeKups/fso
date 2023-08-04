@@ -1,71 +1,95 @@
 import { useState, useEffect, Fragment } from 'react';
-import axios from 'axios'
-
-const Filter = ({filter, setFilter}) => (
-    <form onSubmit={event => event.preventDefault()}>
-        <div>filter <input onChange={(event) => setFilter(event.target.value)}/></div>
-    </form>
-);
-
-const ContactForm = ({addPerson, newName, setNewName, newNumber, setNewNumber}) => (
-    <form onSubmit={addPerson}>
-        <div>
-            name: <input value={newName} onChange={(event) => setNewName(event.target.value)} />
-        </div>
-        <div>
-            number: <input value={newNumber} onChange={(event) => setNewNumber(event.target.value)} />
-        </div>
-        <button type='submit'>add</button>
-    </form>
-);
-
-const Persons = ({persons, filter}) => (
-    <ul>
-        { persons
-            .filter((element) => element.name.toLowerCase().indexOf(filter.toLowerCase()) !== -1)
-            .map((person) => <li key={person.name}>{person.name} {person.number}</li>)
-        }
-    </ul>
-);
-
-const dbURL = 'http://localhost:3001';
+import phonebook from './phonebook';
+import Filter from './components/Filter';
+import ContactForm from './components/ContactForm';
+import Persons from './components/Persons';
 
 export const App = () => {
     const [persons, setPersons] = useState([]);
     const [newName, setNewName] = useState('');
     const [newNumber, setNewNumber] = useState('');
-    const [filter, setFilter] = useState('');
+    const [filterStr, setFilter] = useState('');
 
     useEffect(() => {
-        const resource = '/persons';
-        console.log(`Requesting ${resource}`);
-        axios.get(dbURL+resource)
-            .then(res => {
-                console.log(`Got ${resource} from server`);
-                setPersons(res.data)
-            });
+        phonebook.getAll().then(personsData => setPersons(personsData));
     }, []);
+
+    const setPhoneNumber = (person, newNumber) => {
+        phonebook.setPhoneNumber(person, newNumber).
+            then(persons => {
+                console.log(`Phone number of ${person.name} changed to ${newNumber}`);
+                setPersons( persons );
+            }).
+            catch(error => {
+                console.log(error.message);
+                alert(error.message);
+            });
+        setNewName('');
+        setNewNumber('');
+    };
 
     const addPerson = (event) => {
         event.preventDefault();
 
-        if (persons.find((element) => element.name === newName)) {
-            alert(`${newName} is already in the phonebook.`);
+        const resetFields = () => {
+        };
+
+        const personFound = persons.find(person => person.name === newName);
+        if (personFound) {
+            phonebook.setPhoneNumber(personFound, newNumber)
+                .then(newPersonData => {
+                    setPersons( persons.map( person =>
+                        (person.id === newPersonData.id)
+                            ? { ...newPersonData }
+                            : person
+                    ))
+                })
+                .catch(error => {
+                    console.log(error.message);
+                    alert(error.message);
+                });
             setNewName('');
             setNewNumber('');
             return;
         }
 
-        setPersons( persons.concat({name: newName, number: newNumber}) );
+        const newPerson = {name: newName, number: newNumber};
+        phonebook.addPerson(newPerson)
+            .then( newPersonData => {
+                setPersons(persons.concat(newPersonData));
+            })
+            .catch(error => {
+                console.log(error);
+                alert(error.message);
+            });
+
         setNewName('');
         setNewNumber('');
+    }
+
+    const deletePerson = (person) => {
+        return () => {
+            if (! window.confirm(`Really remove ${person.name}?`)) {
+                console.log(`Deleting ${person.name} cancelled.`);
+                return;
+            }
+
+            phonebook.deletePerson(person.id)
+                .then(response => {
+                    setPersons( persons.filter(personIter => personIter.id !== person.id) );
+                })
+                .catch(error => {
+                    console.log(error.message);
+                    alert(error.message);
+                });
+        };
     }
 
     return (
     <Fragment>
         <h1>Phonebook</h1>
 
-        <Filter filter={filter} setFilter={setFilter} />
+        <Filter filterStr={filterStr} setFilter={setFilter} />
 
         <h2>Add new contact</h2>
         <ContactForm
@@ -77,7 +101,7 @@ export const App = () => {
         />
 
         <h2>Numbers</h2>
-        <Persons persons={persons} filter={filter}/>
+        <Persons persons={persons} filterStr={filterStr} deleteAction={deletePerson}/>
     </Fragment>
     );
 };
