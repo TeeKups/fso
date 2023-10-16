@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const dbURL = 'http://localhost:3001';
-const personsResource = '/persons';
+const personsResource = '/api/persons';
 
 const getAll = () => {
     console.log(`Requesting ${personsResource}`);
