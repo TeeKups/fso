@@ -1,17 +1,17 @@
 const debug = (...args) => {
-    console.debug('DEBUG:', ...args);
+    process.env.DISABLE_LOGGER || console.debug('DEBUG:', ...args);
 };
 
 const info = (...args) => {
-    console.info('INFO:', ...args);
+    process.env.DISABLE_LOGGER || console.info('INFO:', ...args);
 };
 
 const warn = (...args) => {
-    console.warn('WARNING:', ...args);
+    process.env.DISABLE_LOGGER || console.warn('WARNING:', ...args);
 };
 
 const error = (...args) => {
-    console.error('ERROR:', ...args);
+    process.env.DISABLE_LOGGER || console.error('ERROR:', ...args);
 };
 
 module.exports = {

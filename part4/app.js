@@ -1,13 +1,14 @@
-const http = require('http');
 const express = require('express');
 const app = express();
 const cors = require('cors');
 const mongoose = require('mongoose');
+require('express-async-errors')
 
 const config = require('./utils/config');
 const blogsRouter = require('./controllers/blogs');
 const logger = require('./utils/logger');
 const middleware = require('./utils/middleware');
+
 
 const mongoUrl = config.MONGODB_URI;
 logger.debug('config:', config);
